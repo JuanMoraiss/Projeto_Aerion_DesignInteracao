@@ -1,0 +1,165 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AERION — Air Defense Simulation</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo">△ AERION<small>AIR DEFENSE SIMULATION</small></div>
+    <button class="nav active" data-page="home">▦ Painel Operacional</button>
+    <button class="nav" data-page="radar">◉ Radar</button>
+    <button class="nav" data-page="targets">⊕ Alvos</button>
+    <button class="nav" data-page="alerts">♧ Alertas</button>
+    <button class="nav" data-page="settings">⚙ Configurações</button>
+    <p class="disclaimer">Simulação acadêmica<br>Dados fictícios.</p>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <span class="online">● SIMULAÇÃO ATIVA</span>
+      <span>Tempo: <b id="clock">00:00:00</b></span>
+      <span>Alvos: <b id="targetCount">7</b></span>
+      <span>Amigos: <b id="friendCount">2</b></span>
+      <span>Ameaças: <b id="threatCount">3</b></span>
+      <span id="crumb" class="crumb">Perímetro Norte › Zona B3 › T-04</span>
+      <span id="sweepStatus">Varredura ativa</span>
+      <input id="cmd" placeholder="Comando (ex.: interceptar T-04)" aria-label="Comando de voz ou texto">
+      <button id="mic" title="Comando de voz" aria-label="Comando de voz">🎤</button>
+      <button id="soundBtn" title="Liga ou desliga o som dos alertas">🔊 Som</button>
+      <button id="helpBtn" title="Como operar (atalho: ?)">? Ajuda</button>
+      <button id="simAlert" class="danger" title="Simula um alerta vermelho para teste">Simular alerta vermelho</button>
+    </header>
+    <div id="redAlert" class="red-alert" role="alert" hidden></div>
+
+    <div class="content">
+      <section class="page active" id="home">
+        <h1>Painel Operacional</h1>
+        <div class="dashboard">
+          <article class="panel">
+            <h2>Visão geral do radar</h2>
+            <div id="homeRadar" class="radar-wrap"></div>
+            <button data-go="radar">Abrir radar →</button>
+          </article>
+
+          <article class="panel">
+            <h2>Resumo dos alvos</h2>
+            <div class="stat">Amigos identificados <b id="homeFriends">2</b></div>
+            <div class="stat">Ameaças simuladas <b id="homeThreats">3</b></div>
+            <div class="stat">Desconhecidos <b id="homeUnknown">2</b></div>
+            <div class="stat">Total detectado <b id="homeTotal">7</b></div>
+            <h2>Estado dos radares</h2>
+            <div class="stat">Radar Norte <b class="green">Operacional</b></div>
+            <div class="stat">Radar Leste <b class="green">Operacional</b></div>
+            <div class="stat">Radar Sul <b class="yellow">Atenção</b></div>
+          </article>
+
+          <article class="panel">
+            <h2>Alertas recentes</h2>
+            <div id="recentAlerts"></div>
+            <button data-go="alerts">Ver todos →</button>
+          </article>
+        </div>
+      </section>
+
+      <section class="page" id="radar">
+        <h1>Monitoramento de Radar</h1>
+        <div class="toolbar">
+          <label>Filtro:
+            <select id="filter">
+              <option value="all">Todos</option>
+              <option value="friend">Amigos</option>
+              <option value="unknown">Desconhecidos</option>
+              <option value="threat">Ameaças</option>
+            </select>
+          </label>
+          <label>Alcance:
+            <select id="range">
+              <option value="50">50 km</option>
+              <option value="100" selected>100 km</option>
+              <option value="150">150 km</option>
+              <option value="200">200 km</option>
+            </select>
+          </label>
+          <button id="pauseSweep">Pausar varredura</button>
+          <button id="resetRadar">Restaurar</button>
+          <button id="focusBtn" title="Atenua os contatos secundários para destacar o crítico">Modo foco</button>
+        </div>
+
+        <div class="radar-layout">
+          <article class="panel">
+            <div id="bigRadar" class="radar-wrap"></div>
+            <p class="hint">Clique em um contato para ver seus dados.</p>
+            <div class="legend"><span><i class="sh f"></i>Aliado</span><span><i class="sh u"></i>Desconhecido</span><span><i class="sh t"></i>Hostil</span><span><i class="sh c"></i>Hostil crítico</span></div>
+          </article>
+          <article class="panel details">
+            <h2>Contato selecionado</h2>
+            <div id="selectedDetails"></div>
+            <button data-go="targets">Ver detalhes do alvo →</button>
+            <h2 style="margin-top:18px">Por tempo até o impacto</h2>
+            <div id="threatList"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="page" id="targets">
+        <h1>Detalhes do alvo</h1>
+        <div class="panel details" id="targetDetails"></div>
+        <article class="panel details"><h2>Interceptação</h2><div id="plan"></div></article>
+        <article class="panel">
+          <h2>Trajetória estimada</h2>
+          <div id="trajectory" class="trajectory"></div>
+          <p class="hint">Estimativa visual simplificada para fins acadêmicos.</p>
+          <label>Observações
+            <textarea id="notes" placeholder="Digite suas observações..."></textarea>
+          </label>
+          <button id="saveDecision">Registrar decisão</button>
+          <button data-go="radar">Voltar ao radar</button>
+        </article>
+        <article class="panel"><h2>Últimas ações</h2><ul id="actionLog"></ul></article>
+      </section>
+
+      <section class="page" id="alerts">
+        <h1>Central de Alertas</h1>
+        <div class="toolbar">
+          <input id="alertSearch" placeholder="Buscar por alvo ou descrição">
+          <select id="alertStatus">
+            <option value="all">Todos os status</option>
+            <option>Pendente</option>
+            <option>Visualizado</option>
+            <option>Resolvido</option>
+          </select>
+        </div>
+        <article class="panel">
+          <div id="alertList"></div>
+        </article>
+      </section>
+
+      <section class="page" id="settings">
+        <h1>Configurações</h1>
+        <article class="panel details">
+          <h2>Simulação acadêmica</h2>
+          <p>Os dados apresentados são fictícios e gerados localmente.</p>
+          <label>Velocidade da simulação
+            <select id="simSpeed">
+              <option value="0.5">Lenta</option>
+              <option value="1" selected>Normal</option>
+              <option value="2">Rápida</option>
+            </select>
+          </label>
+          <button id="pauseSimulation">Pausar simulação</button>
+          <button id="restartSimulation">Reiniciar cronômetro</button>
+        </article>
+      </section>
+    </div>
+    <div id="toast" class="toast"></div>
+    <div id="undo" class="undo" role="status" hidden></div>
+    <div id="captions" class="captions" role="status" aria-live="polite"></div>
+    <dialog id="dlg"></dialog>
+  </main>
+</body>
+</html>
